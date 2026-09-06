@@ -4,6 +4,7 @@ import { getOptionsContracts } from '../services/api.js';
 export default function OptionsLookup() {
   const [ticker, setTicker] = useState('PCG');
   const [result, setResult] = useState(null);
+  const [contractType, setContractType] = useState('all');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -21,7 +22,7 @@ export default function OptionsLookup() {
     setError('');
 
     try {
-      const data = await getOptionsContracts(symbol);
+      const data = await getOptionsContracts(symbol, contractType);
       setTicker(symbol);
       setResult(data);
     } catch (err) {
@@ -40,6 +41,33 @@ export default function OptionsLookup() {
           <h3>Live options lookup</h3>
         </div>
         <span>Contract reference data</span>
+      </div>
+
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+        {[
+          ['all', 'All'],
+          ['call', 'Calls'],
+          ['put', 'Puts'],
+        ].map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setContractType(value)}
+            aria-pressed={contractType === value}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '999px',
+              border: contractType === value ? '1px solid currentColor' : '1px solid rgba(255,255,255,0.15)',
+              background: contractType === value ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)',
+              color: 'inherit',
+              cursor: 'pointer',
+              font: 'inherit',
+              fontWeight: contractType === value ? '700' : '500',
+            }}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '10px', marginBottom: '18px' }}>

@@ -49,6 +49,10 @@ export default {
         .trim()
         .toUpperCase();
 
+      const contractType = (url.searchParams.get("type") || "all")
+        .trim()
+        .toLowerCase();
+
       if (!/^[A-Z.]{1,10}$/.test(ticker)) {
         return Response.json(
           { error: "Invalid ticker symbol" },
@@ -56,10 +60,21 @@ export default {
         );
       }
 
-      const massiveUrl =
+      if (!["all", "call", "put"].includes(contractType)) {
+        return Response.json(
+          { error: "Invalid contract type" },
+          { status: 400 }
+        );
+      }
+
+      let massiveUrl =
         "https://api.massive.com/v3/reference/options/contracts" +
         `?underlying_ticker=${encodeURIComponent(ticker)}` +
         "&expired=false&limit=20&sort=expiration_date&order=asc";
+
+      if (contractType !== "all") {
+        massiveUrl += `&contract_type=${contractType}`;
+      }
 
       const response = await fetch(massiveUrl, {
         headers: {

@@ -79,7 +79,9 @@ export default {
       const cachedResponse = await cache.match(cacheKey);
 
       if (cachedResponse) {
-        return cachedResponse;
+        const hitResponse = new Response(cachedResponse.body, cachedResponse);
+        hitResponse.headers.set("X-FlowHunter-Cache", "HIT");
+        return hitResponse;
       }
 
       let massiveUrl =
@@ -130,7 +132,7 @@ export default {
         },
         {
           headers: {
-            "Cache-Control": "public, max-age=300",
+            "Cache-Control": "public, max-age=300",\n            "X-FlowHunter-Cache": "MISS",
           },
         }
       );

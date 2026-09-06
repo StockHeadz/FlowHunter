@@ -1,0 +1,11 @@
+</> JSON
+
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "flowhunter",
+  "compatibility_date": "2026-09-05",
+  "assets": {
+    "directory": "./dist"
+  }
+}
+

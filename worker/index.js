@@ -37,6 +37,68 @@ export default {
       });
     }
 
+    if (url.pathname === "/api/options") {
+      if (!env.MASSIVE_API_KEY) {
+        return Response.json(
+          { error: "MASSIVE_API_KEY is not configured" },
+          { status: 500 }
+        );
+      }
+
+      const ticker = (url.searchParams.get("ticker") || "AAPL")
+        .trim()
+        .toUpperCase();
+
+      if (!/^[A-Z.]{1,10}$/.test(ticker)) {
+        return Response.json(
+          { error: "Invalid ticker symbol" },
+          { status: 400 }
+        );
+      }
+
+      const massiveUrl =
+        "https://api.massive.com/v3/reference/options/contracts" +
+        `?underlying_ticker=${encodeURIComponent(ticker)}` +
+        "&expired=false&limit=20&sort=expiration_date&order=asc";
+
+      const response = await fetch(massiveUrl, {
+        headers: {
+          Authorization: `Bearer ${env.MASSIVE_API_KEY}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return Response.json(
+          {
+            error: "Massive request failed",
+            status: response.status,
+            details: data,
+          },
+          { status: response.status }
+        );
+      }
+
+      const contracts = (data.results || []).map((contract) => ({
+        ticker: contract.ticker,
+        underlyingTicker: contract.underlying_ticker,
+        contractType: contract.contract_type,
+        strikePrice: contract.strike_price,
+        expirationDate: contract.expiration_date,
+        exerciseStyle: contract.exercise_style,
+        sharesPerContract: contract.shares_per_contract,
+        primaryExchange: contract.primary_exchange,
+      }));
+
+      return Response.json({
+        ok: true,
+        underlyingTicker: ticker,
+        count: contracts.length,
+        contracts,
+      });
+    }
+
     return env.ASSETS.fetch(request);
   },
 };

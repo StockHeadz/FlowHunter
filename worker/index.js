@@ -167,6 +167,95 @@ export default {
       });
     }
 
+    if (url.pathname === "/api/stock/metrics") {
+      if (!env.MASSIVE_API_KEY) {
+        return Response.json(
+          { error: "MASSIVE_API_KEY is not configured" },
+          { status: 500 }
+        );
+      }
+
+      const ticker = (url.searchParams.get("ticker") || "AAPL")
+        .trim()
+        .toUpperCase();
+
+      if (!/^[A-Z.]{1,10}$/.test(ticker)) {
+        return Response.json(
+          { error: "Invalid ticker symbol" },
+          { status: 400 }
+        );
+      }
+
+      const to = new Date();
+      const from = new Date();
+      from.setUTCDate(from.getUTCDate() - 45);
+
+      const formatDate = (date) => date.toISOString().slice(0, 10);
+
+      const massiveUrl =
+        `https://api.massive.com/v2/aggs/ticker/${encodeURIComponent(ticker)}/range/1/day/${formatDate(from)}/${formatDate(to)}` +
+        "?adjusted=true&sort=asc&limit=50";
+
+      const response = await fetch(massiveUrl, {
+        headers: {
+          Authorization: `Bearer ${env.MASSIVE_API_KEY}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return Response.json(
+          {
+            error: "Massive stock metrics request failed",
+            status: response.status,
+          },
+          { status: response.status }
+        );
+      }
+
+      const bars = (data.results || []).slice(-30);
+
+      if (bars.length < 21) {
+        return Response.json(
+          { error: "Not enough historical data to calculate metrics" },
+          { status: 422 }
+        );
+      }
+
+      const latest = bars[bars.length - 1];
+      const fiveDaysAgo = bars[bars.length - 6];
+      const twentyDaysAgo = bars[bars.length - 21];
+
+      const recent20 = bars.slice(-20);
+      const prior20Volumes = bars.slice(-21, -1).map((bar) => bar.v);
+
+      const high20 = Math.max(...recent20.map((bar) => bar.h));
+      const low20 = Math.min(...recent20.map((bar) => bar.l));
+      const averageVolume20 =
+        prior20Volumes.reduce((sum, volume) => sum + volume, 0) /
+        prior20Volumes.length;
+
+      const round = (value, decimals = 2) =>
+        Number(value.toFixed(decimals));
+
+      return Response.json({
+        ok: true,
+        ticker,
+        metrics: {
+          close: latest.c,
+          return5dPct: round(((latest.c / fiveDaysAgo.c) - 1) * 100),
+          return20dPct: round(((latest.c / twentyDaysAgo.c) - 1) * 100),
+          high20,
+          low20,
+          distanceFromHigh20Pct: round(((latest.c / high20) - 1) * 100),
+          averageVolume20: Math.round(averageVolume20),
+          latestVolume: latest.v,
+          relativeVolume: round(latest.v / averageVolume20),
+        },
+      });
+    }
+
     if (url.pathname === "/api/options") {
       if (!env.MASSIVE_API_KEY) {
         return Response.json(

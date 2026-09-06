@@ -132,7 +132,8 @@ export default {
         },
         {
           headers: {
-            "Cache-Control": "public, max-age=300",\n            "X-FlowHunter-Cache": "MISS",
+            "Cache-Control": "public, max-age=300",
+        "X-FlowHunter-Cache": "MISS",
           },
         }
       );

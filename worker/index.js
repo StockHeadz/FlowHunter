@@ -37,6 +37,71 @@ export default {
       });
     }
 
+    if (url.pathname === "/api/stock/prev") {
+      if (!env.MASSIVE_API_KEY) {
+        return Response.json(
+          { error: "MASSIVE_API_KEY is not configured" },
+          { status: 500 }
+        );
+      }
+
+      const ticker = (url.searchParams.get("ticker") || "AAPL")
+        .trim()
+        .toUpperCase();
+
+      if (!/^[A-Z.]{1,10}$/.test(ticker)) {
+        return Response.json(
+          { error: "Invalid ticker symbol" },
+          { status: 400 }
+        );
+      }
+
+      const massiveUrl =
+        `https://api.massive.com/v2/aggs/ticker/${encodeURIComponent(ticker)}/prev` +
+        "?adjusted=true";
+
+      const response = await fetch(massiveUrl, {
+        headers: {
+          Authorization: `Bearer ${env.MASSIVE_API_KEY}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return Response.json(
+          {
+            error: "Massive stock request failed",
+            status: response.status,
+          },
+          { status: response.status }
+        );
+      }
+
+      const bar = data.results?.[0];
+
+      if (!bar) {
+        return Response.json(
+          { error: "No previous-day stock data returned" },
+          { status: 404 }
+        );
+      }
+
+      return Response.json({
+        ok: true,
+        ticker,
+        previousDay: {
+          open: bar.o,
+          high: bar.h,
+          low: bar.l,
+          close: bar.c,
+          volume: bar.v,
+          vwap: bar.vw ?? null,
+          timestamp: bar.t,
+        },
+      });
+    }
+
     if (url.pathname === "/api/options") {
       if (!env.MASSIVE_API_KEY) {
         return Response.json(

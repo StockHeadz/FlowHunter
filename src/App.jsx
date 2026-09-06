@@ -5,6 +5,7 @@ import ScoreRing from './components/ScoreRing.jsx';
 import LineChart from './components/LineChart.jsx';
 import BarChart from './components/BarChart.jsx';
 import EvidenceBreakdown from './components/EvidenceBreakdown.jsx';
+import OptionsLookup from './components/OptionsLookup.jsx';
 import { getDashboardData } from './services/api.js';
 
 const filters = [
@@ -165,7 +166,9 @@ export default function App() {
           </div>
         </section>
 
-        <section className="panel validation-panel">
+        <OptionsLookup />
+
+      <section className="panel validation-panel">
           <div className="panel-heading"><div><span className="section-kicker">Validation</span><h3>Historical outcomes</h3></div><span>Production milestone</span></div>
           <div className="validation-empty">
             <div className="validation-icon">↗</div>

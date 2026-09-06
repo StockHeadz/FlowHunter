@@ -67,6 +67,21 @@ export default {
         );
       }
 
+      const cache = caches.default;
+      const cacheUrl = new URL(request.url);
+      cacheUrl.searchParams.set("ticker", ticker);
+      cacheUrl.searchParams.set("type", contractType);
+
+      const cacheKey = new Request(cacheUrl.toString(), {
+        method: "GET",
+      });
+
+      const cachedResponse = await cache.match(cacheKey);
+
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
       let massiveUrl =
         "https://api.massive.com/v3/reference/options/contracts" +
         `?underlying_ticker=${encodeURIComponent(ticker)}` +
@@ -106,12 +121,23 @@ export default {
         primaryExchange: contract.primary_exchange,
       }));
 
-      return Response.json({
-        ok: true,
-        underlyingTicker: ticker,
-        count: contracts.length,
-        contracts,
-      });
+      const apiResponse = Response.json(
+        {
+          ok: true,
+          underlyingTicker: ticker,
+          count: contracts.length,
+          contracts,
+        },
+        {
+          headers: {
+            "Cache-Control": "public, max-age=300",
+          },
+        }
+      );
+
+      await cache.put(cacheKey, apiResponse.clone());
+
+      return apiResponse;
     }
 
     return env.ASSETS.fetch(request);

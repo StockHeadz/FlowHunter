@@ -33,3 +33,24 @@ export async function getOptionsContracts(ticker, type = 'all') {
 
   return data;
 }
+
+
+export async function getSignal(ticker) {
+  const symbol = ticker.trim().toUpperCase();
+
+  if (!symbol) {
+    throw new Error("Enter a ticker symbol.");
+  }
+
+  const response = await fetch(
+    `/api/signal?ticker=${encodeURIComponent(symbol)}`
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Unable to load signal.");
+  }
+
+  return data;
+}

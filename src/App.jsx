@@ -6,7 +6,7 @@ import LineChart from './components/LineChart.jsx';
 import BarChart from './components/BarChart.jsx';
 import EvidenceBreakdown from './components/EvidenceBreakdown.jsx';
 import OptionsLookup from './components/OptionsLookup.jsx';
-import { getDashboardData } from './services/api.js';
+import { getDashboardData, getSignal } from './services/api.js';
 
 const filters = [
   ['All', 'All'],
@@ -20,12 +20,44 @@ export default function App() {
   const [filter, setFilter] = useState('All');
   const [selectedTicker, setSelectedTicker] = useState('PCG');
   const [detailTab, setDetailTab] = useState('overview');
+  const [signal, setSignal] = useState(null);
+  const [signalLoading, setSignalLoading] = useState(false);
+  const [signalError, setSignalError] = useState('');
 
   useEffect(() => {
     let active = true;
     getDashboardData().then((result) => active && setData(result));
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    setSignalLoading(true);
+    setSignalError('');
+
+    getSignal(selectedTicker)
+      .then((result) => {
+        if (active) {
+          setSignal(result);
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          setSignal(null);
+          setSignalError(error.message || 'Unable to load live signal.');
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setSignalLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [selectedTicker]);
 
   const filtered = useMemo(() => {
     if (!data) return [];
@@ -118,7 +150,55 @@ export default function App() {
             <div><span>YTD</span><strong className={selected.ytd > 0 ? 'positive' : 'negative'}>{selected.ytd > 0 ? '+' : ''}{selected.ytd}%</strong></div>
           </div>
 
-          <div className="detail-tabs" role="tablist">
+          <div className="panel" style={{ marginBottom: "14px", padding: "14px 16px" }}>
+          <div className="panel-heading" style={{ marginBottom: "10px" }}>
+            <div>
+              <span className="section-kicker">Live signal</span>
+              <h3>{selected.ticker} market context</h3>
+            </div>
+            <span>{signalLoading ? "Loading…" : signal?.stage || "Unavailable"}</span>
+          </div>
+
+          {signalError ? (
+            <div className="empty-state">
+              <strong>Live signal unavailable</strong>
+              <span>{signalError}</span>
+            </div>
+          ) : signal ? (
+            <div className="detail-score-strip">
+              <div className="opportunity-block">
+                <span>Stock context</span>
+                <strong>{signal.stockContextScore}</strong>
+                <small>/100</small>
+              </div>
+              <div>
+                <span>Flow score</span>
+                <strong>{signal.flowScore ?? "Pending"}</strong>
+              </div>
+              <div>
+                <span>Opportunity</span>
+                <strong>{signal.opportunityScore ?? "Pending"}</strong>
+              </div>
+              <div>
+                <span>5D return</span>
+                <strong className={signal.factors.momentum.return5dPct >= 0 ? "positive" : "negative"}>
+                  {signal.factors.momentum.return5dPct > 0 ? "+" : ""}
+                  {signal.factors.momentum.return5dPct}%
+                </strong>
+              </div>
+              <div>
+                <span>Relative volume</span>
+                <strong>{signal.factors.volume.relativeVolume}x</strong>
+              </div>
+            </div>
+          ) : (
+            <div className="empty-state">
+              <strong>No live signal loaded</strong>
+            </div>
+          )}
+        </div>
+
+        <div className="detail-tabs" role="tablist">
             <button className={detailTab === 'overview' ? 'active' : ''} onClick={() => setDetailTab('overview')}>Overview</button>
             <button className={detailTab === 'why' ? 'active' : ''} onClick={() => setDetailTab('why')}>Why this score</button>
             <button className={detailTab === 'prints' ? 'active' : ''} onClick={() => setDetailTab('prints')}>Qualifying prints</button>

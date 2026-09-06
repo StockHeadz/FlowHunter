@@ -86,7 +86,7 @@ export default function App() {
         </div>
         <div className="status-cluster" title="This build uses static demo data">
           <span className="status-dot demo" />
-          <div><strong>{data.status.mode}</strong><small>Updated {updated} · {data.status.delayLabel}</small></div>
+          <div><strong>Demo signals + Live market context</strong><small>Updated {updated} · {data.status.delayLabel}</small></div>
         </div>
       </header>
 
@@ -126,7 +126,7 @@ export default function App() {
       <main className="dashboard-grid">
         <section className="panel candidates-panel">
           <div className="panel-heading">
-            <div><span className="section-kicker">Scanner</span><h3>Candidate leaderboard</h3></div>
+            <div><span className="section-kicker">Demo signals</span><h3>Candidate leaderboard</h3></div>
             <span>Ranked by opportunity</span>
           </div>
           <CandidateTable rows={filtered} selectedTicker={selected.ticker} onSelect={(ticker) => { setSelectedTicker(ticker); setDetailTab('overview'); }} />

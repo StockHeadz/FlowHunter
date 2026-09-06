@@ -256,6 +256,154 @@ export default {
       });
     }
 
+    if (url.pathname === "/api/signal") {
+      if (!env.MASSIVE_API_KEY) {
+        return Response.json(
+          { error: "MASSIVE_API_KEY is not configured" },
+          { status: 500 }
+        );
+      }
+
+      const ticker = (url.searchParams.get("ticker") || "AAPL")
+        .trim()
+        .toUpperCase();
+
+      if (!/^[A-Z.]{1,10}$/.test(ticker)) {
+        return Response.json(
+          { error: "Invalid ticker symbol" },
+          { status: 400 }
+        );
+      }
+
+      const to = new Date();
+      const from = new Date();
+      from.setUTCDate(from.getUTCDate() - 45);
+
+      const formatDate = (date) => date.toISOString().slice(0, 10);
+
+      const massiveUrl =
+        `https://api.massive.com/v2/aggs/ticker/${encodeURIComponent(ticker)}/range/1/day/${formatDate(from)}/${formatDate(to)}` +
+        "?adjusted=true&sort=asc&limit=50";
+
+      const response = await fetch(massiveUrl, {
+        headers: {
+          Authorization: `Bearer ${env.MASSIVE_API_KEY}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return Response.json(
+          {
+            error: "Massive signal request failed",
+            status: response.status,
+          },
+          { status: response.status }
+        );
+      }
+
+      const bars = (data.results || []).slice(-30);
+
+      if (bars.length < 21) {
+        return Response.json(
+          { error: "Not enough historical data to calculate signal" },
+          { status: 422 }
+        );
+      }
+
+      const latest = bars[bars.length - 1];
+      const fiveDaysAgo = bars[bars.length - 6];
+      const twentyDaysAgo = bars[bars.length - 21];
+      const recent20 = bars.slice(-20);
+      const prior20Volumes = bars.slice(-21, -1).map((bar) => bar.v);
+
+      const high20 = Math.max(...recent20.map((bar) => bar.h));
+      const low20 = Math.min(...recent20.map((bar) => bar.l));
+      const averageVolume20 =
+        prior20Volumes.reduce((sum, volume) => sum + volume, 0) /
+        prior20Volumes.length;
+
+      const round = (value, decimals = 2) =>
+        Number(value.toFixed(decimals));
+
+      const clamp = (value, min, max) =>
+        Math.min(max, Math.max(min, value));
+
+      const return5dPct =
+        round(((latest.c / fiveDaysAgo.c) - 1) * 100);
+
+      const return20dPct =
+        round(((latest.c / twentyDaysAgo.c) - 1) * 100);
+
+      const relativeVolume =
+        round(latest.v / averageVolume20);
+
+      const rangePosition =
+        high20 === low20
+          ? 0.5
+          : (latest.c - low20) / (high20 - low20);
+
+      const momentumScore = clamp(
+        Math.round(20 + return5dPct * 0.8 + return20dPct * 0.3),
+        0,
+        40
+      );
+
+      const volumeScore = clamp(
+        Math.round(relativeVolume * 20),
+        0,
+        30
+      );
+
+      const pricePositionScore = clamp(
+        Math.round(rangePosition * 30),
+        0,
+        30
+      );
+
+      const stockContextScore =
+        momentumScore + volumeScore + pricePositionScore;
+
+      return Response.json({
+        ok: true,
+        ticker,
+        provisional: true,
+        stage: "DATA INCOMPLETE",
+        stockContextScore,
+        flowScore: null,
+        opportunityScore: null,
+        factors: {
+          momentum: {
+            score: momentumScore,
+            max: 40,
+            return5dPct,
+            return20dPct,
+          },
+          volume: {
+            score: volumeScore,
+            max: 30,
+            relativeVolume,
+          },
+          pricePosition: {
+            score: pricePositionScore,
+            max: 30,
+            high20,
+            low20,
+            close: latest.c,
+            rangePositionPct: round(rangePosition * 100),
+          },
+        },
+        missingData: [
+          "options trade flow",
+          "bid/ask execution",
+          "premium",
+          "open-interest change",
+          "greeks and implied volatility"
+        ],
+      });
+    }
+
     if (url.pathname === "/api/options") {
       if (!env.MASSIVE_API_KEY) {
         return Response.json(

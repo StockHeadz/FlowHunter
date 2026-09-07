@@ -43,7 +43,7 @@ export async function getSignal(ticker) {
   }
 
   const response = await fetch(
-    `/api/signal?ticker=${encodeURIComponent(symbol)}`
+    `/api/signal?ticker=${encodeURIComponent(symbol)}&includeOptions=1`
   );
 
   const data = await response.json();

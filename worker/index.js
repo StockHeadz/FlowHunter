@@ -390,17 +390,122 @@ export default {
 
       if (includeOptions) {
         try {
-          const optionsContextUrl = new URL(
-            "/api/options/context",
-            request.url
-          );
-          optionsContextUrl.searchParams.set("ticker", ticker);
+          const optionsCacheUrl = new URL(request.url);
+          optionsCacheUrl.pathname = "/api/options/context";
+          optionsCacheUrl.search = "";
+          optionsCacheUrl.searchParams.set("ticker", ticker);
 
-          const optionsResponse = await fetch(optionsContextUrl.toString());
+          const optionsCacheKey = new Request(optionsCacheUrl.toString(), {
+            method: "GET",
+          });
 
-          if (optionsResponse.ok) {
-            const optionsData = await optionsResponse.json();
+          const cachedOptionsResponse = await cache.match(optionsCacheKey);
+          let optionsData = null;
 
+          if (cachedOptionsResponse) {
+            optionsData = await cachedOptionsResponse.json();
+          } else {
+            const optionsMassiveUrl = new URL(
+              "https://api.massive.com/v3/reference/options/contracts"
+            );
+
+            optionsMassiveUrl.searchParams.set("underlying_ticker", ticker);
+            optionsMassiveUrl.searchParams.set("expired", "false");
+            optionsMassiveUrl.searchParams.set("limit", "1000");
+            optionsMassiveUrl.searchParams.set("sort", "expiration_date");
+            optionsMassiveUrl.searchParams.set("order", "asc");
+
+            const optionsResponse = await fetch(optionsMassiveUrl.toString(), {
+              headers: {
+                Authorization: `Bearer ${env.MASSIVE_API_KEY}`,
+              },
+            });
+
+            if (optionsResponse.ok) {
+              const optionsRaw = await optionsResponse.json();
+              const contracts = optionsRaw.results || [];
+              const calls = contracts.filter(
+                (contract) => contract.contract_type === "call"
+              );
+              const puts = contracts.filter(
+                (contract) => contract.contract_type === "put"
+              );
+
+              const expirations = [
+                ...new Set(
+                  contracts
+                    .map((contract) => contract.expiration_date)
+                    .filter(Boolean)
+                ),
+              ].sort();
+
+              const nearestExpiration = expirations[0] || null;
+              const nearestContracts = nearestExpiration
+                ? contracts.filter(
+                    (contract) =>
+                      contract.expiration_date === nearestExpiration
+                  )
+                : [];
+
+              const nearestCalls = nearestContracts.filter(
+                (contract) => contract.contract_type === "call"
+              ).length;
+
+              const nearestPuts = nearestContracts.filter(
+                (contract) => contract.contract_type === "put"
+              ).length;
+
+              const nearestStrikes = nearestContracts
+                .map((contract) => Number(contract.strike_price))
+                .filter(Number.isFinite);
+
+              const minStrike = nearestStrikes.length
+                ? Math.min(...nearestStrikes)
+                : null;
+
+              const maxStrike = nearestStrikes.length
+                ? Math.max(...nearestStrikes)
+                : null;
+
+              optionsData = {
+                source: "Massive contract reference",
+                liveFlowData: false,
+                countFetched: contracts.length,
+                callCount: calls.length,
+                putCount: puts.length,
+                expirationCount: expirations.length,
+                nearestExpiration,
+                nearestExpirationContext: {
+                  contractCount: nearestContracts.length,
+                  callCount: nearestCalls,
+                  putCount: nearestPuts,
+                  minStrike,
+                  maxStrike,
+                },
+              };
+
+              const optionsApiResponse = Response.json(
+                {
+                  ok: true,
+                  ticker,
+                  ...optionsData,
+                },
+                {
+                  headers: {
+                    "Cache-Control": "public, max-age=300",
+                    "X-FlowHunter-Cache": "MISS",
+                  },
+                }
+              );
+
+              await cache.put(
+                optionsCacheKey,
+                optionsApiResponse.clone()
+              );
+            }
+          }
+
+          if (optionsData) {
             optionsContext = {
               available: true,
               source: optionsData.source,

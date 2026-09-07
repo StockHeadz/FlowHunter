@@ -190,6 +190,26 @@ export default function App() {
                 <span>Relative volume</span>
                 <strong>{signal.factors.volume.relativeVolume}x</strong>
               </div>
+          {signal.optionsContext?.available && (
+            <>
+              <div>
+                <span>Options contracts</span>
+                <strong>{signal.optionsContext.countFetched}</strong>
+              </div>
+              <div>
+                <span>Calls / puts</span>
+                <strong>{signal.optionsContext.callCount} / {signal.optionsContext.putCount}</strong>
+              </div>
+              <div>
+                <span>Expirations</span>
+                <strong>{signal.optionsContext.expirationCount}</strong>
+              </div>
+              <div>
+                <span>Nearest expiry</span>
+                <strong>{signal.optionsContext.nearestExpiration ?? "—"}</strong>
+              </div>
+            </>
+          )}
             </div>
           ) : (
             <div className="empty-state">

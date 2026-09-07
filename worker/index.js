@@ -506,8 +506,20 @@ export default {
           }
 
           if (optionsData) {
+        const totalContracts = Number(optionsData.countFetched) || 0;
+        const callCount = Number(optionsData.callCount) || 0;
+        const putCount = Number(optionsData.putCount) || 0;
+        const nearestContractCount = Number(optionsData.nearestExpirationContext?.contractCount) || 0;
+
+        const chainStructure = {
+          callSharePct: totalContracts ? Number(((callCount / totalContracts) * 100).toFixed(2)) : null,
+          putSharePct: totalContracts ? Number(((putCount / totalContracts) * 100).toFixed(2)) : null,
+          nearestExpirationConcentrationPct: totalContracts ? Number(((nearestContractCount / totalContracts) * 100).toFixed(2)) : null,
+        };
+
             optionsContext = {
               available: true,
+          chainStructure,
               source: optionsData.source,
               liveFlowData: optionsData.liveFlowData,
               countFetched: optionsData.countFetched,

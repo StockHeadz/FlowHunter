@@ -278,7 +278,7 @@ export default function App() {
           </div>
         </section>
 
-        <OptionsLookup />
+        <OptionsLookup initialTicker={selectedTicker} />
 
       <section className="panel validation-panel">
           <div className="panel-heading"><div><span className="section-kicker">Validation</span><h3>Historical outcomes</h3></div><span>Production milestone</span></div>

@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getOptionsContracts } from '../services/api.js';
 
-export default function OptionsLookup() {
-  const [ticker, setTicker] = useState('PCG');
+export default function OptionsLookup({ initialTicker = 'PCG' }) {
+  const [ticker, setTicker] = useState(initialTicker);
   const [result, setResult] = useState(null);
   const [contractType, setContractType] = useState('all');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    setTicker(initialTicker);
+    setResult(null);
+    setError('');
+  }, [initialTicker]);
 
   async function handleSubmit(event) {
     event.preventDefault();

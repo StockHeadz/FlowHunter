@@ -208,6 +208,18 @@ export default function App() {
                 <span>Nearest expiry</span>
                 <strong>{signal.optionsContext.nearestExpiration ?? "—"}</strong>
               </div>
+              <div>
+                <span>Call share</span>
+                <strong>{signal.optionsContext.chainStructure?.callSharePct ?? "—"}%</strong>
+              </div>
+              <div>
+                <span>Put share</span>
+                <strong>{signal.optionsContext.chainStructure?.putSharePct ?? "—"}%</strong>
+              </div>
+              <div>
+                <span>Nearest-expiry concentration</span>
+                <strong>{signal.optionsContext.chainStructure?.nearestExpirationConcentrationPct ?? "—"}%</strong>
+              </div>
             </>
           )}
             </div>

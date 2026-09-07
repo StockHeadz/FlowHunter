@@ -404,6 +404,146 @@ export default {
       });
     }
 
+    if (url.pathname === "/api/options/context") {
+      if (!env.MASSIVE_API_KEY) {
+        return Response.json(
+          { error: "MASSIVE_API_KEY is not configured" },
+          { status: 500 }
+        );
+      }
+
+      const ticker = (url.searchParams.get("ticker") || "AAPL")
+        .trim()
+        .toUpperCase();
+
+      if (!/^[A-Z.]{1,10}$/.test(ticker)) {
+        return Response.json(
+          { error: "Invalid ticker symbol" },
+          { status: 400 }
+        );
+      }
+
+      const cache = caches.default;
+      const cacheUrl = new URL(request.url);
+      cacheUrl.searchParams.set("ticker", ticker);
+
+      const cacheKey = new Request(cacheUrl.toString(), {
+        method: "GET",
+      });
+
+      const cachedResponse = await cache.match(cacheKey);
+
+      if (cachedResponse) {
+        const hitResponse = new Response(cachedResponse.body, cachedResponse);
+        hitResponse.headers.set("X-FlowHunter-Cache", "HIT");
+        return hitResponse;
+      }
+
+      const massiveUrl = new URL(
+        "https://api.massive.com/v3/reference/options/contracts"
+      );
+
+      massiveUrl.searchParams.set("underlying_ticker", ticker);
+      massiveUrl.searchParams.set("expired", "false");
+      massiveUrl.searchParams.set("limit", "1000");
+      massiveUrl.searchParams.set("sort", "expiration_date");
+      massiveUrl.searchParams.set("order", "asc");
+
+      const response = await fetch(massiveUrl.toString(), {
+        headers: {
+          Authorization: `Bearer ${env.MASSIVE_API_KEY}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return Response.json(
+          {
+            error: "Massive options context request failed",
+            status: response.status,
+          },
+          { status: response.status }
+        );
+      }
+
+      const contracts = data.results || [];
+      const calls = contracts.filter(
+        (contract) => contract.contract_type === "call"
+      );
+      const puts = contracts.filter(
+        (contract) => contract.contract_type === "put"
+      );
+
+      const expirations = [
+        ...new Set(
+          contracts
+            .map((contract) => contract.expiration_date)
+            .filter(Boolean)
+        ),
+      ].sort();
+
+      const nearestExpiration = expirations[0] || null;
+
+      const nearestContracts = nearestExpiration
+        ? contracts.filter(
+            (contract) => contract.expiration_date === nearestExpiration
+          )
+        : [];
+
+      const nearestCalls = nearestContracts.filter(
+        (contract) => contract.contract_type === "call"
+      ).length;
+
+      const nearestPuts = nearestContracts.filter(
+        (contract) => contract.contract_type === "put"
+      ).length;
+
+      const nearestStrikes = nearestContracts
+        .map((contract) => Number(contract.strike_price))
+        .filter(Number.isFinite);
+
+      const minStrike = nearestStrikes.length
+        ? Math.min(...nearestStrikes)
+        : null;
+
+      const maxStrike = nearestStrikes.length
+        ? Math.max(...nearestStrikes)
+        : null;
+
+      const apiResponse = Response.json(
+        {
+          ok: true,
+          ticker,
+          source: "Massive contract reference",
+          liveFlowData: false,
+          countFetched: contracts.length,
+          hasMore: Boolean(data.next_url),
+          callCount: calls.length,
+          putCount: puts.length,
+          expirationCount: expirations.length,
+          nearestExpiration,
+          nearestExpirationContext: {
+            contractCount: nearestContracts.length,
+            callCount: nearestCalls,
+            putCount: nearestPuts,
+            minStrike,
+            maxStrike,
+          },
+        },
+        {
+          headers: {
+            "Cache-Control": "public, max-age=300",
+            "X-FlowHunter-Cache": "MISS",
+          },
+        }
+      );
+
+      await cache.put(cacheKey, apiResponse.clone());
+
+      return apiResponse;
+    }
+
     if (url.pathname === "/api/options") {
       if (!env.MASSIVE_API_KEY) {
         return Response.json(

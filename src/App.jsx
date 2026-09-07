@@ -92,7 +92,7 @@ export default function App() {
 
       <section className="hero-card">
         <div className="hero-copy">
-          <div className="eyebrow">Top opportunity right now</div>
+          <div className="eyebrow">Top demo opportunity</div>
           <div className="hero-title-row">
             <div><h2>{top.ticker}</h2><span>{top.company}</span></div>
             <StageBadge stage={top.stage} />
@@ -106,10 +106,10 @@ export default function App() {
           </div>
         </div>
         <div className="hero-score-area">
-          <ScoreRing value={top.opportunity} label="Opportunity" />
+          <ScoreRing value={top.opportunity} label="Demo Opportunity" />
           <div className="hero-mini-scores">
-            <div><span>Flow</span><strong>{top.flow}</strong></div>
-            <div><span>Upside</span><strong>{top.upside}</strong></div>
+            <div><span>Demo Flow</span><strong>{top.flow}</strong></div>
+            <div><span>Demo Upside</span><strong>{top.upside}</strong></div>
           </div>
         </div>
       </section>
@@ -142,9 +142,9 @@ export default function App() {
           </div>
 
           <div className="detail-score-strip">
-            <div className="opportunity-block"><span>Opportunity</span><strong>{selected.opportunity}</strong><small>/100</small></div>
-            <div><span>Flow</span><strong>{selected.flow}</strong></div>
-            <div><span>Upside</span><strong>{selected.upside}</strong></div>
+            <div className="opportunity-block"><span>Demo Opportunity</span><strong>{selected.opportunity}</strong><small>/100</small></div>
+            <div><span>Demo Flow</span><strong>{selected.flow}</strong></div>
+            <div><span>Demo Upside</span><strong>{selected.upside}</strong></div>
             <div><span>PCG similarity</span><strong>{selected.similarity}%</strong></div>
             <div><span>OI change</span><strong>+{selected.oiChange}%</strong></div>
             <div><span>YTD</span><strong className={selected.ytd > 0 ? 'positive' : 'negative'}>{selected.ytd > 0 ? '+' : ''}{selected.ytd}%</strong></div>

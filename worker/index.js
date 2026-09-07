@@ -275,6 +275,23 @@ export default {
         );
       }
 
+      const cache = caches.default;
+      const cacheUrl = new URL(request.url);
+      cacheUrl.search = "";
+      cacheUrl.searchParams.set("ticker", ticker);
+
+      const cacheKey = new Request(cacheUrl.toString(), {
+        method: "GET",
+      });
+
+      const cachedResponse = await cache.match(cacheKey);
+
+      if (cachedResponse) {
+        const hitResponse = new Response(cachedResponse.body, cachedResponse);
+        hitResponse.headers.set("X-FlowHunter-Cache", "HIT");
+        return hitResponse;
+      }
+
       const to = new Date();
       const from = new Date();
       from.setUTCDate(from.getUTCDate() - 45);
@@ -365,7 +382,8 @@ export default {
       const stockContextScore =
         momentumScore + volumeScore + pricePositionScore;
 
-      return Response.json({
+      const apiResponse = Response.json(
+        {
         ok: true,
         ticker,
         provisional: true,
@@ -401,7 +419,18 @@ export default {
           "open-interest change",
           "greeks and implied volatility"
         ],
-      });
+        },
+        {
+          headers: {
+            "Cache-Control": "public, max-age=300",
+            "X-FlowHunter-Cache": "MISS",
+          },
+        }
+      );
+
+      await cache.put(cacheKey, apiResponse.clone());
+
+      return apiResponse;
     }
 
     if (url.pathname === "/api/options/context") {

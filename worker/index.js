@@ -425,6 +425,7 @@ export default {
 
       const cache = caches.default;
       const cacheUrl = new URL(request.url);
+      cacheUrl.search = "";
       cacheUrl.searchParams.set("ticker", ticker);
 
       const cacheKey = new Request(cacheUrl.toString(), {

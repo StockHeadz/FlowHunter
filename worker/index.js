@@ -275,10 +275,14 @@ export default {
         );
       }
 
+      const includeOptions =
+        url.searchParams.get("includeOptions") === "1";
+
       const cache = caches.default;
       const cacheUrl = new URL(request.url);
       cacheUrl.search = "";
       cacheUrl.searchParams.set("ticker", ticker);
+      cacheUrl.searchParams.set("includeOptions", includeOptions ? "1" : "0");
 
       const cacheKey = new Request(cacheUrl.toString(), {
         method: "GET",
@@ -382,6 +386,47 @@ export default {
       const stockContextScore =
         momentumScore + volumeScore + pricePositionScore;
 
+      let optionsContext = null;
+
+      if (includeOptions) {
+        try {
+          const optionsContextUrl = new URL(
+            "/api/options/context",
+            request.url
+          );
+          optionsContextUrl.searchParams.set("ticker", ticker);
+
+          const optionsResponse = await fetch(optionsContextUrl.toString());
+
+          if (optionsResponse.ok) {
+            const optionsData = await optionsResponse.json();
+
+            optionsContext = {
+              available: true,
+              source: optionsData.source,
+              liveFlowData: optionsData.liveFlowData,
+              countFetched: optionsData.countFetched,
+              callCount: optionsData.callCount,
+              putCount: optionsData.putCount,
+              expirationCount: optionsData.expirationCount,
+              nearestExpiration: optionsData.nearestExpiration,
+              nearestExpirationContext:
+                optionsData.nearestExpirationContext,
+            };
+          } else {
+            optionsContext = {
+              available: false,
+              error: "Options contract context unavailable",
+            };
+          }
+        } catch {
+          optionsContext = {
+            available: false,
+            error: "Options contract context unavailable",
+          };
+        }
+      }
+
       const apiResponse = Response.json(
         {
         ok: true,
@@ -391,6 +436,7 @@ export default {
         stockContextScore,
         flowScore: null,
         opportunityScore: null,
+        optionsContext,
         factors: {
           momentum: {
             score: momentumScore,

@@ -467,9 +467,33 @@ export default {
                 ? Math.max(...nearestStrikes)
                 : null;
 
+        const nearMoneyContracts = nearestContracts.filter((contract) => {
+          const strike = Number(contract.strike_price);
+          return (
+            Number.isFinite(strike) &&
+            latest.c > 0 &&
+            Math.abs(strike - latest.c) / latest.c <= 0.10
+          );
+        });
+
+        const nearMoneyCalls = nearMoneyContracts.filter(
+          (contract) => contract.contract_type === "call"
+        ).length;
+
+        const nearMoneyPuts = nearMoneyContracts.filter(
+          (contract) => contract.contract_type === "put"
+        ).length;
+
               optionsData = {
                 source: "Massive contract reference",
                 liveFlowData: false,
+nearMoneyContext: {
+  stockPrice: latest.c,
+  bandPct: 10,
+  contractCount: nearMoneyContracts.length,
+  callCount: nearMoneyCalls,
+  putCount: nearMoneyPuts,
+},
                 countFetched: contracts.length,
                 callCount: calls.length,
                 putCount: puts.length,

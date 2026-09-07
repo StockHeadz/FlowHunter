@@ -553,6 +553,7 @@ nearMoneyContext: {
               nearestExpiration: optionsData.nearestExpiration,
               nearestExpirationContext:
                 optionsData.nearestExpirationContext,
+nearMoneyContext: optionsData.nearMoneyContext,
             };
           } else {
             optionsContext = {

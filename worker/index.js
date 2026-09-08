@@ -514,12 +514,24 @@ const moneynessCounts = nearMoneyContracts.reduce(
     const bucket = classifyMoneyness(contract);
 
     if (bucket) {
-      counts[bucket] += 1;
+      counts[bucket].total += 1;
+
+      if (contract.contract_type === "call") {
+        counts[bucket].calls += 1;
+      }
+
+      if (contract.contract_type === "put") {
+        counts[bucket].puts += 1;
+      }
     }
 
     return counts;
   },
-  { ITM: 0, ATM: 0, OTM: 0 }
+  {
+    ITM: { total: 0, calls: 0, puts: 0 },
+    ATM: { total: 0, calls: 0, puts: 0 },
+    OTM: { total: 0, calls: 0, puts: 0 },
+  }
 );
 
               optionsData = {
@@ -532,11 +544,16 @@ nearMoneyContext: {
   callCount: nearMoneyCalls,
   putCount: nearMoneyPuts,
 atmBandPct: atmBandPct * 100,
-itmCount: moneynessCounts.ITM,
-atmCount: moneynessCounts.ATM,
-otmCount: moneynessCounts.OTM,
+itmCount: moneynessCounts.ITM.total,
+atmCount: moneynessCounts.ATM.total,
+otmCount: moneynessCounts.OTM.total,
+moneynessBreakdown: {
+  ITM: moneynessCounts.ITM,
+  ATM: moneynessCounts.ATM,
+  OTM: moneynessCounts.OTM,
 },
-                countFetched: contracts.length,
+},               
+ countFetched: contracts.length,
                 callCount: calls.length,
                 putCount: puts.length,
                 expirationCount: expirations.length,

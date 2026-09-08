@@ -225,20 +225,16 @@ export default function App() {
   <strong>{signal.optionsContext.nearMoneyContext?.contractCount ?? "—"}</strong>
 </div>
 <div>
-  <span>Near-money calls</span>
-  <strong>{signal.optionsContext.nearMoneyContext?.callCount ?? "—"}</strong>
+  <span>ITM</span>
+  <strong>{signal.optionsContext.nearMoneyContext?.itmCount ?? "—"}</strong>
 </div>
 <div>
-  <span>Near-money puts</span>
-  <strong>{signal.optionsContext.nearMoneyContext?.putCount ?? "—"}</strong>
+  <span>ATM</span>
+  <strong>{signal.optionsContext.nearMoneyContext?.atmCount ?? "—"}</strong>
 </div>
 <div>
-  <span>Near-money call share</span>
-  <strong>{signal.optionsContext.chainStructure?.nearMoneyCallSharePct ?? "—"}%</strong>
-</div>
-<div>
-  <span>Near-money put share</span>
-  <strong>{signal.optionsContext.chainStructure?.nearMoneyPutSharePct ?? "—"}%</strong>
+  <span>OTM</span>
+  <strong>{signal.optionsContext.nearMoneyContext?.otmCount ?? "—"}</strong>
 </div>
             </>
           )}

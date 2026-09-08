@@ -232,6 +232,14 @@ export default function App() {
   <span>Near-money puts</span>
   <strong>{signal.optionsContext.nearMoneyContext?.putCount ?? "—"}</strong>
 </div>
+<div>
+  <span>Near-money call share</span>
+  <strong>{signal.optionsContext.chainStructure?.nearMoneyCallSharePct ?? "—"}%</strong>
+</div>
+<div>
+  <span>Near-money put share</span>
+  <strong>{signal.optionsContext.chainStructure?.nearMoneyPutSharePct ?? "—"}%</strong>
+</div>
             </>
           )}
             </div>

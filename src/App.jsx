@@ -225,6 +225,10 @@ export default function App() {
   <strong>{signal.optionsContext.nearMoneyContext?.contractCount ?? "—"}</strong>
 </div>
 <div>
+  <span>Structure bias</span>
+  <strong>{signal.optionsContext.nearMoneyContext?.structureBias ?? "—"}</strong>
+</div>
+<div>
   <span>Closest strike</span>
   <strong>${signal.optionsContext.nearMoneyContext?.nearestStrikeToSpot ?? "—"}</strong>
 </div>

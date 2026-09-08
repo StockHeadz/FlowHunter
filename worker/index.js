@@ -466,6 +466,25 @@ export default {
               const maxStrike = nearestStrikes.length
                 ? Math.max(...nearestStrikes)
                 : null;
+const nearestStrikeToSpot = nearestStrikes.length
+  ? nearestStrikes.reduce((closest, strike) =>
+      Math.abs(strike - latest.c) < Math.abs(closest - latest.c)
+        ? strike
+        : closest
+    )
+  : null;
+
+const nearestStrikeDistance =
+  nearestStrikeToSpot !== null
+    ? Number((nearestStrikeToSpot - latest.c).toFixed(2))
+    : null;
+
+const nearestStrikeDistancePct =
+  nearestStrikeToSpot !== null && latest.c > 0
+    ? Number(
+        (((nearestStrikeToSpot - latest.c) / latest.c) * 100).toFixed(2)
+      )
+    : null;
 
         const nearMoneyContracts = nearestContracts.filter((contract) => {
           const strike = Number(contract.strike_price);
@@ -539,6 +558,9 @@ const moneynessCounts = nearMoneyContracts.reduce(
                 liveFlowData: false,
 nearMoneyContext: {
   stockPrice: latest.c,
+nearestStrikeToSpot,
+nearestStrikeDistance,
+nearestStrikeDistancePct,
   bandPct: 10,
   contractCount: nearMoneyContracts.length,
   callCount: nearMoneyCalls,

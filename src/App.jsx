@@ -225,6 +225,18 @@ export default function App() {
   <strong>{signal.optionsContext.nearMoneyContext?.contractCount ?? "—"}</strong>
 </div>
 <div>
+  <span>Closest strike</span>
+  <strong>${signal.optionsContext.nearMoneyContext?.nearestStrikeToSpot ?? "—"}</strong>
+</div>
+<div>
+  <span>Distance to strike</span>
+  <strong>${signal.optionsContext.nearMoneyContext?.nearestStrikeDistance ?? "—"}</strong>
+</div>
+<div>
+  <span>Distance %</span>
+  <strong>{signal.optionsContext.nearMoneyContext?.nearestStrikeDistancePct ?? "—"}%</strong>
+</div>
+<div>
   <span>ITM</span>
   <strong>{signal.optionsContext.nearMoneyContext?.itmCount ?? "—"}</strong>
   <span>

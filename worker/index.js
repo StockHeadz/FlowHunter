@@ -534,10 +534,19 @@ nearMoneyContext: {
         const callCount = Number(optionsData.callCount) || 0;
         const putCount = Number(optionsData.putCount) || 0;
         const nearestContractCount = Number(optionsData.nearestExpirationContext?.contractCount) || 0;
-
+const nearMoneyCallCount = Number(optionsData.nearMoneyContext?.callCount) || 0;
+const nearMoneyPutCount = Number(optionsData.nearMoneyContext?.putCount) || 0;
         const chainStructure = {
           callSharePct: totalContracts ? Number(((callCount / totalContracts) * 100).toFixed(2)) : null,
           putSharePct: totalContracts ? Number(((putCount / totalContracts) * 100).toFixed(2)) : null,
+nearMoneyCallSharePct:
+  nearMoneyCallCount + nearMoneyPutCount
+    ? Number(((nearMoneyCallCount / (nearMoneyCallCount + nearMoneyPutCount)) * 100).toFixed(2))
+    : null,
+nearMoneyPutSharePct:
+  nearMoneyCallCount + nearMoneyPutCount
+    ? Number(((nearMoneyPutCount / (nearMoneyCallCount + nearMoneyPutCount)) * 100).toFixed(2))
+    : null,
           nearestExpirationConcentrationPct: totalContracts ? Number(((nearestContractCount / totalContracts) * 100).toFixed(2)) : null,
         };
 

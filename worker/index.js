@@ -483,6 +483,44 @@ export default {
         const nearMoneyPuts = nearMoneyContracts.filter(
           (contract) => contract.contract_type === "put"
         ).length;
+const atmBandPct = 0.01;
+
+const classifyMoneyness = (contract) => {
+  const strike = Number(contract.strike_price);
+
+  if (!Number.isFinite(strike) || latest.c <= 0) {
+    return null;
+  }
+
+  const distancePct = Math.abs(strike - latest.c) / latest.c;
+
+  if (distancePct <= atmBandPct) {
+    return "ATM";
+  }
+
+  if (contract.contract_type === "call") {
+    return strike < latest.c ? "ITM" : "OTM";
+  }
+
+  if (contract.contract_type === "put") {
+    return strike > latest.c ? "ITM" : "OTM";
+  }
+
+  return null;
+};
+
+const moneynessCounts = nearMoneyContracts.reduce(
+  (counts, contract) => {
+    const bucket = classifyMoneyness(contract);
+
+    if (bucket) {
+      counts[bucket] += 1;
+    }
+
+    return counts;
+  },
+  { ITM: 0, ATM: 0, OTM: 0 }
+);
 
               optionsData = {
                 source: "Massive contract reference",
@@ -493,6 +531,10 @@ nearMoneyContext: {
   contractCount: nearMoneyContracts.length,
   callCount: nearMoneyCalls,
   putCount: nearMoneyPuts,
+atmBandPct: atmBandPct * 100,
+itmCount: moneynessCounts.ITM,
+atmCount: moneynessCounts.ATM,
+otmCount: moneynessCounts.OTM,
 },
                 countFetched: contracts.length,
                 callCount: calls.length,

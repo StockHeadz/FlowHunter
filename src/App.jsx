@@ -227,14 +227,23 @@ export default function App() {
 <div>
   <span>ITM</span>
   <strong>{signal.optionsContext.nearMoneyContext?.itmCount ?? "—"}</strong>
+  <span>
+    {signal.optionsContext.nearMoneyContext?.moneynessBreakdown?.ITM?.calls ?? "—"}C / {signal.optionsContext.nearMoneyContext?.moneynessBreakdown?.ITM?.puts ?? "—"}P
+  </span>
 </div>
 <div>
   <span>ATM</span>
   <strong>{signal.optionsContext.nearMoneyContext?.atmCount ?? "—"}</strong>
+  <span>
+    {signal.optionsContext.nearMoneyContext?.moneynessBreakdown?.ATM?.calls ?? "—"}C / {signal.optionsContext.nearMoneyContext?.moneynessBreakdown?.ATM?.puts ?? "—"}P
+  </span>
 </div>
 <div>
   <span>OTM</span>
   <strong>{signal.optionsContext.nearMoneyContext?.otmCount ?? "—"}</strong>
+  <span>
+    {signal.optionsContext.nearMoneyContext?.moneynessBreakdown?.OTM?.calls ?? "—"}C / {signal.optionsContext.nearMoneyContext?.moneynessBreakdown?.OTM?.puts ?? "—"}P
+  </span>
 </div>
             </>
           )}

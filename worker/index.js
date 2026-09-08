@@ -597,6 +597,8 @@ moneynessBreakdown: {
                   contractCount: nearestContracts.length,
                   callCount: nearestCalls,
                   putCount: nearestPuts,
+callSharePct: nearestExpiryCallSharePct,
+putSharePct: nearestExpiryPutSharePct,
                   minStrike,
                   maxStrike,
                 },

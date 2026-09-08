@@ -454,6 +454,17 @@ export default {
               const nearestPuts = nearestContracts.filter(
                 (contract) => contract.contract_type === "put"
               ).length;
+const nearestExpiryTotal = nearestCalls + nearestPuts;
+
+const nearestExpiryCallSharePct =
+  nearestExpiryTotal > 0
+    ? Number(((nearestCalls / nearestExpiryTotal) * 100).toFixed(2))
+    : null;
+
+const nearestExpiryPutSharePct =
+  nearestExpiryTotal > 0
+    ? Number(((nearestPuts / nearestExpiryTotal) * 100).toFixed(2))
+    : null;
 
               const nearestStrikes = nearestContracts
                 .map((contract) => Number(contract.strike_price))

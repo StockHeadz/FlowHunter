@@ -220,6 +220,18 @@ export default function App() {
                 <span>Nearest-expiry concentration</span>
                 <strong>{signal.optionsContext.chainStructure?.nearestExpirationConcentrationPct ?? "—"}%</strong>
               </div>
+<div>
+  <span>Near-money contracts</span>
+  <strong>{signal.optionsContext.nearMoneyContext?.contractCount ?? "—"}</strong>
+</div>
+<div>
+  <span>Near-money calls</span>
+  <strong>{signal.optionsContext.nearMoneyContext?.callCount ?? "—"}</strong>
+</div>
+<div>
+  <span>Near-money puts</span>
+  <strong>{signal.optionsContext.nearMoneyContext?.putCount ?? "—"}</strong>
+</div>
             </>
           )}
             </div>

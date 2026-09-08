@@ -552,7 +552,19 @@ const moneynessCounts = nearMoneyContracts.reduce(
     OTM: { total: 0, calls: 0, puts: 0 },
   }
 );
+const nearMoneyTotal = nearMoneyCalls + nearMoneyPuts;
 
+const nearMoneyCallShare =
+  nearMoneyTotal > 0 ? nearMoneyCalls / nearMoneyTotal : null;
+
+const nearMoneyStructureBias =
+  nearMoneyCallShare === null
+    ? "UNAVAILABLE"
+    : nearMoneyCallShare >= 0.6
+      ? "CALL-HEAVY"
+      : nearMoneyCallShare <= 0.4
+        ? "PUT-HEAVY"
+        : "BALANCED";
               optionsData = {
                 source: "Massive contract reference",
                 liveFlowData: false,
@@ -564,7 +576,8 @@ nearestStrikeDistancePct,
   bandPct: 10,
   contractCount: nearMoneyContracts.length,
   callCount: nearMoneyCalls,
-  putCount: nearMoneyPuts,
+  putCount: nearMoneyPuts,callSharePct: nearMoneyCallShare === null ? null : Number((nearMoneyCallShare * 100).toFixed(1)),
+structureBias: nearMoneyStructureBias,
 atmBandPct: atmBandPct * 100,
 itmCount: moneynessCounts.ITM.total,
 atmCount: moneynessCounts.ATM.total,

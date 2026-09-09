@@ -579,6 +579,7 @@ const nearMoneyStructureBias =
               optionsData = {
                 source: "Massive contract reference",
                 liveFlowData: false,
+thirtyDayExpirationSharePct,
 nearMoneyContext: {
   stockPrice: latest.c,
 nearestStrikeToSpot,
@@ -662,6 +663,7 @@ nearMoneyPutSharePct:
           chainStructure,
               source: optionsData.source,
               liveFlowData: optionsData.liveFlowData,
+thirtyDayExpirationSharePct: optionsData.thirtyDayExpirationSharePct,
               countFetched: optionsData.countFetched,
               callCount: optionsData.callCount,
               putCount: optionsData.putCount,
@@ -831,7 +833,31 @@ nearMoneyContext: optionsData.nearMoneyContext,
 
       const nearestPuts = nearestContracts.filter(
         (contract) => contract.contract_type === "put"
-      ).length;
+      ).length;const now = new Date();
+
+const thirtyDaysFromNow = new Date(
+  now.getTime() + 30 * 24 * 60 * 60 * 1000
+);
+
+const contractsWithin30Days = contracts.filter((contract) => {
+  if (!contract.expiration_date) return false;
+
+  const expirationDate = new Date(
+    `${contract.expiration_date}T23:59:59Z`
+  );
+
+  return expirationDate >= now && expirationDate <= thirtyDaysFromNow;
+});
+
+const thirtyDayExpirationSharePct =
+  contracts.length > 0
+    ? Number(
+        (
+          (contractsWithin30Days.length / contracts.length) *
+          100
+        ).toFixed(2)
+      )
+    : null;
 
 const nearestExpiryTotal = nearestCalls + nearestPuts;
 

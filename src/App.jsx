@@ -221,6 +221,14 @@ export default function App() {
                 <strong>{signal.optionsContext.chainStructure?.nearestExpirationConcentrationPct ?? "—"}%</strong>
               </div>
 <div>
+  <span>Nearest-expiry call share</span>
+  <strong>{signal.optionsContext.nearestExpirationContext?.callSharePct ?? "—"}%</strong>
+</div>
+<div>
+  <span>Nearest-expiry put share</span>
+  <strong>{signal.optionsContext.nearestExpirationContext?.putSharePct ?? "—"}%</strong>
+</div>
+<div>
   <span>Near-money contracts</span>
   <strong>{signal.optionsContext.nearMoneyContext?.contractCount ?? "—"}</strong>
 </div>

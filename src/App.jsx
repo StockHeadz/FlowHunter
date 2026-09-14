@@ -219,7 +219,10 @@ export default function App() {
               <div>
                 <span>Nearest-expiry concentration</span>
                 <strong>{signal.optionsContext.chainStructure?.nearestExpirationConcentrationPct ?? "—"}%</strong>
-              </div>
+              </div><div>
+  <span>30-day expiry share</span>
+  <strong>{signal.optionsContext.thirtyDayExpirationSharePct ?? "—"}%</strong>
+</div>
 <div>
   <span>Nearest-expiry call share</span>
   <strong>{signal.optionsContext.nearestExpirationContext?.callSharePct ?? "—"}%</strong>

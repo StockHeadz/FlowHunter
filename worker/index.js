@@ -454,6 +454,32 @@ export default {
               const nearestPuts = nearestContracts.filter(
                 (contract) => contract.contract_type === "put"
               ).length;
+const now = new Date();
+
+const thirtyDaysFromNow = new Date(
+  now.getTime() + 30 * 24 * 60 * 60 * 1000
+);
+
+const contractsWithin30Days = contracts.filter((contract) => {
+  if (!contract.expiration_date) return false;
+
+  const expirationDate = new Date(
+    `${contract.expiration_date}T23:59:59Z`
+  );
+
+  return expirationDate >= now && expirationDate <= thirtyDaysFromNow;
+});
+
+const thirtyDayExpirationSharePct =
+  contracts.length > 0
+    ? Number(
+        (
+          (contractsWithin30Days.length / contracts.length) *
+          100
+        ).toFixed(2)
+      )
+    : null;
+
 const nearestExpiryTotal = nearestCalls + nearestPuts;
 
 const nearestExpiryCallSharePct =

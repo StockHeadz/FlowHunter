@@ -691,6 +691,7 @@ nearMoneyPutSharePct:
               source: optionsData.source,
               liveFlowData: optionsData.liveFlowData,
 thirtyDayExpirationSharePct: optionsData.thirtyDayExpirationSharePct,
+thirtyDayExpirationCount: optionsData.thirtyDayExpirationCount,
               countFetched: optionsData.countFetched,
               callCount: optionsData.callCount,
               putCount: optionsData.putCount,

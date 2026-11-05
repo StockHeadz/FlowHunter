@@ -479,7 +479,7 @@ const thirtyDayExpirationSharePct =
         ).toFixed(2)
       )
     : null;
-
+const thirtyDayExpirationCount = contractsWithin30Days.length;
 const nearestExpiryTotal = nearestCalls + nearestPuts;
 
 const nearestExpiryCallSharePct =
@@ -606,6 +606,7 @@ const nearMoneyStructureBias =
                 source: "Massive contract reference",
                 liveFlowData: false,
 thirtyDayExpirationSharePct,
+thirtyDayExpirationCount,
 nearMoneyContext: {
   stockPrice: latest.c,
 nearestStrikeToSpot,

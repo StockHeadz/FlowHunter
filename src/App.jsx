@@ -224,6 +224,10 @@ export default function App() {
   <strong>{signal.optionsContext.thirtyDayExpirationSharePct ?? "—"}%</strong>
 </div>
 <div>
+  <span>30-day expiry contracts</span>
+  <strong>{signal.optionsContext.thirtyDayExpirationCount ?? "—"}</strong>
+</div>
+<div>
   <span>Nearest-expiry call share</span>
   <strong>{signal.optionsContext.nearestExpirationContext?.callSharePct ?? "—"}%</strong>
 </div>

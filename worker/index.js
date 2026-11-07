@@ -480,6 +480,26 @@ const thirtyDayExpirationSharePct =
       )
     : null;
 const thirtyDayExpirationCount = contractsWithin30Days.length;
+const sevenDaysFromNow = new Date(
+  now.getTime() + 7 * 24 * 60 * 60 * 1000
+);
+
+const contractsWithin7Days = contracts.filter((contract) => {
+  if (!contract.expiration_date) return false;
+
+  const expirationDate = new Date(
+    `${contract.expiration_date}T23:59:59Z`
+  );
+
+  return expirationDate >= now && expirationDate <= sevenDaysFromNow;
+});
+
+const sevenDayExpirationCount = contractsWithin7Days.length;
+
+const sevenDayExpirationSharePct =
+  contracts.length > 0
+    ? Number(((sevenDayExpirationCount / contracts.length) * 100).toFixed(2))
+    : null;
 const nearestExpiryTotal = nearestCalls + nearestPuts;
 
 const nearestExpiryCallSharePct =
@@ -607,6 +627,8 @@ const nearMoneyStructureBias =
                 liveFlowData: false,
 thirtyDayExpirationSharePct,
 thirtyDayExpirationCount,
+sevenDayExpirationSharePct,
+sevenDayExpirationCount,
 nearMoneyContext: {
   stockPrice: latest.c,
 nearestStrikeToSpot,
@@ -692,6 +714,8 @@ nearMoneyPutSharePct:
               liveFlowData: optionsData.liveFlowData,
 thirtyDayExpirationSharePct: optionsData.thirtyDayExpirationSharePct,
 thirtyDayExpirationCount: optionsData.thirtyDayExpirationCount,
+sevenDayExpirationSharePct: optionsData.sevenDayExpirationSharePct,
+sevenDayExpirationCount: optionsData.sevenDayExpirationCount,
               countFetched: optionsData.countFetched,
               callCount: optionsData.callCount,
               putCount: optionsData.putCount,
